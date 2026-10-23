@@ -35,7 +35,7 @@ const rgb = $("#rgb").getContext("2d");
 const groups = await (await fetch("data/index.json")).json();
 const hms = (id) => `${id.slice(9, 11)}:${id.slice(11, 13)}:${id.slice(13, 15)}`;
 $("#seq").innerHTML = groups.map((g, k) =>
-  `<button role="tab" data-id="${g.id}"><b>场景 ${k + 1}</b><span>${hms(g.id)} · ${g.n} 帧</span></button>`).join("");
+  `<button role="tab" data-id="${g.id}"><b>${g.name || `场景 ${k + 1}`}</b><span>${hms(g.id)} · ${g.n} 帧</span></button>`).join("");
 $("#seq").onclick = (e) => {
   const b = e.target.closest("button");
   if (b && b.dataset.id !== seq) openGroup(b.dataset.id);
