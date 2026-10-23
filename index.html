@@ -25,10 +25,16 @@
   #view { position: relative; background: var(--view); min-height: 0; }
   #view canvas { display: block; width: 100%; height: 100%; }
   footer { border-top: 1px solid var(--line); background: var(--panel); padding: 8px 16px; display: flex; gap: 14px; align-items: center; }
-  #frame { flex: 1; min-width: 0; }
+  .track { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; }
+  #buf { position: absolute; left: 0; right: 0; height: 4px; border-radius: 2px; background: var(--line); pointer-events: none; }
+  #frame { flex: 1; min-width: 0; position: relative; margin: 0; height: 18px; background: transparent; -webkit-appearance: none; appearance: none; }
+  #frame::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+  #frame::-moz-range-track { height: 4px; background: transparent; }
+  #frame::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5px; border-radius: 50%; background: var(--text); border: 2px solid var(--panel); }
+  #frame::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--text); border: 2px solid var(--panel); }
   button { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; cursor: pointer; font: inherit; }
   button:hover { border-color: var(--accent); }
-  #fid { font: 12px ui-monospace, monospace; color: var(--muted); }
+  #fid, #bufn { font: 12px ui-monospace, monospace; color: var(--muted); }
   @media (max-width: 760px) {
     body { height: auto; min-height: 100vh; }
     main { grid-template-columns: 1fr; }
@@ -44,8 +50,9 @@
 </main>
 <footer>
   <button id="play">▶</button>
-  <input type="range" id="frame" min="0" max="0" value="0">
+  <div class="track"><div id="buf"></div><input type="range" id="frame" min="0" max="0" value="0"></div>
   <span id="fid"></span>
+  <span id="bufn"></span>
   <button id="reset">复位视角</button>
 </footer>
 

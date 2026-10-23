@@ -34,22 +34,52 @@ new ResizeObserver(() => {
 }).observe(view);
 renderer.setAnimationLoop(() => { ctl.update(); renderer.render(scene, cam); });
 
-// ---------- 数据 ----------
+// ---------- 数据：打开页面就并行把全部帧拉下来，全留在内存 ----------
 const cache = new Map();          // 帧序号 → Promise<{pos, col}>
+const done = new Uint8Array(F.length);
+let nDone = 0;
 function load(i) {
   if (!cache.has(i)) {
-    cache.set(i, fetch(`data/pc/${F[i].id}.bin`).then((r) => r.arrayBuffer()).then((buf) => {
+    const img = new Image();       // RGB 一起缓冲，播放时图和点云同步
+    img.src = `data/img/${F[i].id}.jpg`;
+    cache.set(i, Promise.all([fetch(`data/pc/${F[i].id}.bin`).then((r) => {
+      if (!r.ok) throw new Error(r.status);
+      return r.arrayBuffer();
+    }), img.decode()]).then(([buf]) => {
       const n = F[i].n, xyz = new Int16Array(buf, 0, 3 * n);
       const pos = new Float32Array(3 * n);
       for (let k = 0; k < n; k++) {  // OpenCV 相机系（x 右 y 下 z 前）→ three（x 右 y 上 z 后），mm → m
         pos[3 * k] = xyz[3 * k] / 1000; pos[3 * k + 1] = -xyz[3 * k + 1] / 1000; pos[3 * k + 2] = -xyz[3 * k + 2] / 1000;
       }
+      done[i] = 1; nDone++; drawBuffered();
       return { pos, col: new Uint8Array(buf, 6 * n, 3 * n) };
-    }));
-    if (cache.size > 60) cache.delete(cache.keys().next().value);
+    }).catch((e) => { cache.delete(i); throw e; }));
   }
   return cache.get(i);
 }
+
+function drawBuffered() {          // 时间轴底下：已缓冲的段亮色
+  const stops = [];
+  for (let i = 0; i < F.length;) {
+    let j = i;
+    while (j < F.length && done[j] === done[i]) j++;
+    const c = done[i] ? "var(--accent)" : "var(--line)";
+    stops.push(`${c} ${i / F.length * 100}%`, `${c} ${j / F.length * 100}%`);
+    i = j;
+  }
+  $("#buf").style.background = `linear-gradient(90deg, ${stops.join(",")})`;
+  $("#bufn").textContent = nDone < F.length ? `缓冲 ${nDone}/${F.length}` : "";
+}
+
+let next = 0;                      // 8 路并行按顺序拉
+async function worker() {
+  while (next < F.length) {
+    const i = next++;
+    if (done[i]) continue;
+    try { await load(i); } catch { await new Promise((r) => setTimeout(r, 1000)); next = Math.min(next, i); }
+  }
+}
+for (let k = 0; k < 8; k++) worker();
 
 let cur = 0;
 async function show(i) {
@@ -62,7 +92,6 @@ async function show(i) {
   geo.setAttribute("position", new THREE.BufferAttribute(d.pos, 3));
   geo.setAttribute("color", new THREE.BufferAttribute(d.col, 3, true));
   geo.computeBoundingSphere();
-  for (let k = 1; k <= 4; k++) if (i + k < F.length) load(i + k);
 }
 
 // ---------- 播放（按录制时间） ----------
