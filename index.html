@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>充电场景点云</title>
+<style>
+  :root { --bg: #f4f5f7; --panel: #ffffff; --line: #d9dce1; --text: #1d2127; --muted: #69707a; --accent: #2f6fde; --view: #101215; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #121417; --panel: #1b1e23; --line: #2c3036; --text: #e4e6e9; --muted: #8d939c; --accent: #5b93f0; }
+  }
+  :root[data-theme="dark"] { --bg: #121417; --panel: #1b1e23; --line: #2c3036; --text: #e4e6e9; --muted: #8d939c; --accent: #5b93f0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 13px/1.4 system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    display: grid; grid-template-rows: auto 1fr auto; height: 100vh;
+  }
+  header { padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+  main { display: grid; grid-template-columns: minmax(260px, 34%) 1fr; min-height: 0; gap: 1px; background: var(--line); }
+  .imgbox { background: var(--view); display: flex; align-items: center; justify-content: center; min-height: 0; }
+  .imgbox img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+  #view { position: relative; background: var(--view); min-height: 0; }
+  #view canvas { display: block; width: 100%; height: 100%; }
+  footer { border-top: 1px solid var(--line); background: var(--panel); padding: 8px 16px; display: flex; gap: 14px; align-items: center; }
+  #frame { flex: 1; min-width: 0; }
+  button { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; cursor: pointer; font: inherit; }
+  button:hover { border-color: var(--accent); }
+  #fid { font: 12px ui-monospace, monospace; color: var(--muted); }
+  @media (max-width: 760px) {
+    body { height: auto; min-height: 100vh; }
+    main { grid-template-columns: 1fr; }
+    #view { height: 60vh; }
+  }
+</style>
+</head>
+<body>
+<header><h1>充电场景点云</h1></header>
+<main>
+  <section class="imgbox"><img id="rgb" alt="RGB"></section>
+  <section id="view"></section>
+</main>
+<footer>
+  <button id="play">▶</button>
+  <input type="range" id="frame" min="0" max="0" value="0">
+  <span id="fid"></span>
+  <button id="reset">复位视角</button>
+</footer>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
