@@ -52,7 +52,7 @@ function load(i) {
         pos[3 * k] = xyz[3 * k] / 1000; pos[3 * k + 1] = -xyz[3 * k + 1] / 1000; pos[3 * k + 2] = -xyz[3 * k + 2] / 1000;
       }
       done[i] = 1; nDone++; drawBuffered();
-      return { pos, col: new Uint8Array(buf, 6 * n, 3 * n) };
+      return { pos, col: new Uint8Array(buf, 6 * n, 3 * n), img };
     }).catch((e) => { cache.delete(i); throw e; }));
   }
   return cache.get(i);
@@ -81,17 +81,18 @@ async function worker() {
 }
 for (let k = 0; k < 8; k++) worker();
 
+const rgb = $("#rgb").getContext("2d");
 let cur = 0;
 async function show(i) {
   cur = i;
   $("#frame").value = i;
   $("#fid").textContent = `${F[i].t.toFixed(2)} s`;
-  $("#rgb").src = `data/img/${F[i].id}.jpg`;
   const d = await load(i);
   if (cur !== i) return;           // 拖得快时只画最后一帧
   geo.setAttribute("position", new THREE.BufferAttribute(d.pos, 3));
   geo.setAttribute("color", new THREE.BufferAttribute(d.col, 3, true));
   geo.computeBoundingSphere();
+  rgb.drawImage(d.img, 0, 0, 640, 360);   // 已解码的图，和点云同一帧画
 }
 
 // ---------- 播放（按录制时间） ----------
